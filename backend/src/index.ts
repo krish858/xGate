@@ -1,12 +1,16 @@
 import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
 import cors from "cors";
+import fetchRouter from "./routes/fetch";
+import dbconnect from "./utils/dbconnect";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
+dbconnect();
+
+app.use(express.json());
 app.use(cors());
+app.use("/api/fetch", fetchRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
