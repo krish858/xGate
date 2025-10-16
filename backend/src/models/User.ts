@@ -5,6 +5,8 @@ interface IApi {
   description: string;
   generatedEndpoint: string;
   amountGenerated: number;
+  pricePerRequest: number;
+  ownerPublicKey: string;
 }
 
 export interface IUser extends Document {
@@ -16,8 +18,10 @@ export interface IUser extends Document {
 const ApiSchema = new Schema<IApi>({
   name: { type: String, required: true },
   description: { type: String, required: true },
-  generatedEndpoint: { type: String, required: true },
+  generatedEndpoint: { type: String, required: true, unique: true },
   amountGenerated: { type: Number, default: 0 },
+  pricePerRequest: { type: Number, required: true },
+  ownerPublicKey: { type: String, required: true },
 });
 
 const UserSchema = new Schema<IUser>({
