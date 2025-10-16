@@ -6,9 +6,16 @@ const router = express.Router();
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { publicKey, name, description, pricePerRequest } = req.body;
+    const { publicKey, name, description, serviceUrl, pricePerRequest } =
+      req.body;
 
-    if (!publicKey || !name || !description || !pricePerRequest) {
+    if (
+      !publicKey ||
+      !name ||
+      !description ||
+      !serviceUrl ||
+      !pricePerRequest
+    ) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -24,10 +31,13 @@ router.post("/", async (req: Request, res: Response) => {
       name,
       description,
       generatedEndpoint,
+      serviceUrl,
       pricePerRequest: parseFloat(pricePerRequest),
       amountGenerated: 0,
       ownerPublicKey: publicKey,
     };
+    console.log("Incoming body:", req.body);
+    console.log("New API object:", newApi);
 
     user.restEndpoints.push(newApi);
     await user.save();

@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/models/User.ts","./src/routes/fetch.ts","./src/utils/dbconnect.ts"],"version":"5.9.3"}
+{"root":["./src/index.ts","./src/models/User.ts","./src/routes/addRest.ts","./src/routes/fetch.ts","./src/utils/dbconnect.ts"],"version":"5.9.3"}

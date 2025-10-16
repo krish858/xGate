@@ -1,19 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAccount } from "wagmi";
 import ConnectButton from "../components/ConnectButton";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useUserData } from "../hooks/userData";
+import AddRestModal from "../components/AddRestModal";
 
 const Home: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const { userData, loading } = useUserData();
+  //@ts-ignore
+  const { userData, loading, refetch } = useUserData(address || "0x0");
 
   const restApis = userData?.restEndpoints || [];
   const webSockets = userData?.webSockets || [];
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const refreshUserData = () => {
+    if (refetch) refetch();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white">
+      {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-white/10 backdrop-blur-md bg-white/5">
         <h1 className="text-2xl font-bold tracking-tight">xGate</h1>
         <div>
@@ -21,8 +30,10 @@ const Home: React.FC = () => {
         </div>
       </nav>
 
+      {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-10">
         {!isConnected ? (
+          // Landing page
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -44,6 +55,7 @@ const Home: React.FC = () => {
             </div>
           </motion.div>
         ) : (
+          // Dashboard
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -57,10 +69,14 @@ const Home: React.FC = () => {
               <p className="text-center text-gray-400">Loading your APIs...</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
+                {/* REST APIs */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-2xl font-semibold">REST APIs</h3>
-                    <button className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 transition">
+                    <button
+                      className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 transition"
+                      onClick={() => setIsModalOpen(true)}
+                    >
                       <Plus className="w-5 h-5" />
                     </button>
                   </div>
@@ -99,6 +115,7 @@ const Home: React.FC = () => {
                   </div>
                 </div>
 
+                {/* WebSocket APIs */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-2xl font-semibold">WebSocket APIs</h3>
@@ -115,9 +132,21 @@ const Home: React.FC = () => {
           </motion.div>
         )}
       </main>
+
+      {/* Footer */}
       <footer className="text-center text-gray-400 text-sm py-6 border-t border-white/10">
         © {new Date().getFullYear()} xGate — Built on x402
       </footer>
+
+      {/* Add REST API Modal */}
+      {address && (
+        <AddRestModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          publicKey={address}
+          refreshData={refreshUserData}
+        />
+      )}
     </div>
   );
 };
