@@ -22,7 +22,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white">
-      {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-white/10 backdrop-blur-md bg-white/5">
         <h1 className="text-2xl font-bold tracking-tight">xGate</h1>
         <div>
@@ -30,10 +29,8 @@ const Home: React.FC = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-10">
         {!isConnected ? (
-          // Landing page
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -55,7 +52,6 @@ const Home: React.FC = () => {
             </div>
           </motion.div>
         ) : (
-          // Dashboard
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -69,7 +65,6 @@ const Home: React.FC = () => {
               <p className="text-center text-gray-400">Loading your APIs...</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
-                {/* REST APIs */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-2xl font-semibold">REST APIs</h3>
@@ -115,7 +110,6 @@ const Home: React.FC = () => {
                   </div>
                 </div>
 
-                {/* WebSocket APIs */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-2xl font-semibold">WebSocket APIs</h3>
@@ -133,12 +127,10 @@ const Home: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="text-center text-gray-400 text-sm py-6 border-t border-white/10">
         © {new Date().getFullYear()} xGate — Built on x402
       </footer>
 
-      {/* Add REST API Modal */}
       {address && (
         <AddRestModal
           isOpen={isModalOpen}

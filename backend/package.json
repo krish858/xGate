@@ -11,11 +11,15 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@coinbase/x402": "^0.6.6",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mongoose": "^8.19.2",
-    "nanoid": "^5.1.6"
+    "nanoid": "^5.1.6",
+    "x402": "^0.6.6",
+    "x402-express": "^0.6.5",
+    "x402-sdk": "^0.0.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
