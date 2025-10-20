@@ -53,7 +53,8 @@ function createExactPaymentRequirements(
     outputSchema: undefined,
     extra: {
       //@ts-ignore
-      name: atomicAmount.asset.eip712.name, //@ts-ignore
+      name: atomicAmount.asset.eip712.name,
+      //@ts-ignore
       version: atomicAmount.asset.eip712.version,
     },
   };
@@ -130,6 +131,7 @@ router.all("/:id", async (req, res) => {
     if (!api) return res.status(404).json({ error: "API not found" });
 
     const address = api.ownerPublicKey;
+
     const BASE_URL = process.env.SERVER_BASE_URL || "http://localhost:3000";
     const resource = `${BASE_URL}${api.generatedEndpoint}` as Resource;
 
@@ -163,7 +165,11 @@ router.all("/:id", async (req, res) => {
       const settleResponse = await settle(
         exact.evm.decodePayment(req.header("X-PAYMENT")!), //@ts-ignore
         paymentRequirements[0]
-      ); //@ts-ignore
+      );
+
+      api.amountGenerated += api.pricePerRequest;
+      await user.save();
+
       const encodedResponse = Buffer.from(
         JSON.stringify(settleResponse)
       ).toString("base64");
