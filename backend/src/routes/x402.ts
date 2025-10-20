@@ -1,5 +1,6 @@
 import express from "express";
-import axios from "axios";
+import axios, { Method } from "axios";
+import https from "https";
 import User from "../models/User";
 import { config } from "dotenv";
 import { exact } from "x402/schemes";
@@ -25,7 +26,7 @@ if (!FACILITATOR_URL) {
   process.exit(1);
 }
 
-const router = express.Router(); //@ts-ignore
+const router = express.Router();
 const { verify, settle } = useFacilitator({ url: FACILITATOR_URL });
 const x402Version = 1;
 
@@ -35,7 +36,7 @@ function createExactPaymentRequirements(
   resource: Resource,
   description: string,
   address: string
-): any {
+): PaymentRequirements {
   const atomicAmount = processPriceToAtomicAmount(price, network);
   if ("error" in atomicAmount) throw new Error(atomicAmount.error);
 
@@ -52,8 +53,7 @@ function createExactPaymentRequirements(
     outputSchema: undefined,
     extra: {
       //@ts-ignore
-      name: atomicAmount.asset.eip712.name,
-      //@ts-ignore
+      name: atomicAmount.asset.eip712.name, //@ts-ignore
       version: atomicAmount.asset.eip712.version,
     },
   };
@@ -78,7 +78,7 @@ async function verifyPayment(
   try {
     decodedPayment = exact.evm.decodePayment(paymentHeader);
     decodedPayment.x402Version = x402Version;
-  } catch (err) {
+  } catch {
     res.status(402).json({
       x402Version,
       error: "Invalid payment",
@@ -90,7 +90,8 @@ async function verifyPayment(
   try {
     const matchedReq =
       findMatchingPaymentRequirements(paymentRequirements, decodedPayment) ||
-      paymentRequirements[0]; //@ts-ignore
+      paymentRequirements[0];
+    // @ts-ignore
     const response = await verify(decodedPayment, matchedReq);
     if (!response.isValid) {
       res.status(402).json({
@@ -102,9 +103,11 @@ async function verifyPayment(
       return false;
     }
   } catch (err) {
-    res
-      .status(402)
-      .json({ x402Version, error: err, accepts: paymentRequirements });
+    res.status(402).json({
+      x402Version,
+      error: err,
+      accepts: paymentRequirements,
+    });
     return false;
   }
 
@@ -127,9 +130,8 @@ router.all("/:id", async (req, res) => {
     if (!api) return res.status(404).json({ error: "API not found" });
 
     const address = api.ownerPublicKey;
-    const resource = `${req.protocol}://${req.get("host")}${
-      req.originalUrl
-    }` as Resource;
+    const BASE_URL = process.env.SERVER_BASE_URL || "http://localhost:3000";
+    const resource = `${BASE_URL}${api.generatedEndpoint}` as Resource;
 
     const paymentRequirements = [
       createExactPaymentRequirements(
@@ -144,12 +146,15 @@ router.all("/:id", async (req, res) => {
     const isValid = await verifyPayment(req, res, paymentRequirements);
     if (!isValid) return;
 
+    const { "x-payment": _, ...forwardedHeaders } = req.headers;
+
     const axiosConfig = {
-      method: req.method as any,
+      method: req.method as Method,
       url: api.serviceUrl,
-      headers: req.headers,
+      headers: forwardedHeaders,
       data: req.body,
       params: req.query,
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     };
 
     const response = await axios(axiosConfig);
@@ -159,7 +164,10 @@ router.all("/:id", async (req, res) => {
         exact.evm.decodePayment(req.header("X-PAYMENT")!), //@ts-ignore
         paymentRequirements[0]
       ); //@ts-ignore
-      res.setHeader("X-PAYMENT-RESPONSE", settleResponse);
+      const encodedResponse = Buffer.from(
+        JSON.stringify(settleResponse)
+      ).toString("base64");
+      res.setHeader("X-PAYMENT-RESPONSE", encodedResponse);
     } catch (err) {
       console.error("Settlement failed:", err);
     }
