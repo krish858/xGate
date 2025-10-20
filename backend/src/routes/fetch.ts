@@ -1,8 +1,11 @@
 import express, { Request, Response } from "express";
-import User from "../models/User";
+import { UserModel, ApiModel, WebSocketModel } from "../models/User";
 
 const router = express.Router();
 
+/**
+ * Create or fetch a user
+ */
 router.post("/", async (req: Request, res: Response) => {
   try {
     const { publicKey } = req.body;
@@ -10,14 +13,19 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Public key required" });
     }
 
-    let user = await User.findOne({ publicKey });
+    let user = await UserModel.findOne({ publicKey });
     if (!user) {
-      user = new User({ publicKey, restEndpoints: [], webSockets: [] });
+      user = new UserModel({ publicKey, restEndpoints: [], webSockets: [] });
       await user.save();
     }
 
-    const recentRest = user.restEndpoints.slice(-5).reverse();
-    const recentWs = user.webSockets.slice(-5).reverse();
+    // Populate the last 5 APIs and WebSockets
+    const recentRest = await ApiModel.find({ owner: user._id })
+      .sort({ _id: -1 })
+      .limit(5);
+    const recentWs = await WebSocketModel.find({ owner: user._id })
+      .sort({ _id: -1 })
+      .limit(5);
 
     res.json({
       success: true,

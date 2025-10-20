@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import User from "../models/User";
+import { UserModel, ApiModel } from "../models/User";
 import { nanoid } from "nanoid";
 
 const router = express.Router();
@@ -28,15 +28,17 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "All required fields missing" });
     }
 
-    let user = await User.findOne({ publicKey });
+    // Find or create user
+    let user = await UserModel.findOne({ publicKey });
     if (!user) {
-      user = new User({ publicKey, restEndpoints: [], webSockets: [] });
+      user = new UserModel({ publicKey, restEndpoints: [], webSockets: [] });
       await user.save();
     }
 
     const generatedEndpoint = `/api/x402/${nanoid(10)}`;
 
-    const newApi = {
+    // Create API document
+    const api = new ApiModel({
       name,
       description,
       generatedEndpoint,
@@ -46,16 +48,20 @@ router.post("/", async (req: Request, res: Response) => {
       body: body || {},
       pricePerRequest: parseFloat(pricePerRequest),
       amountGenerated: 0,
-      ownerPublicKey: publicKey,
-    };
+      owner: user._id,
+    });
 
-    user.restEndpoints.push(newApi);
+    await api.save();
+
+    //@ts-ignore
+    user.restEndpoints.push(api._id);
     await user.save();
 
-    res.json({ success: true, api: newApi });
+    res.json({ success: true, api });
   } catch (err) {
     console.error("Add REST API error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 export default router;

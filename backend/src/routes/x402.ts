@@ -1,7 +1,7 @@
 import express from "express";
 import axios, { Method } from "axios";
 import https from "https";
-import User from "../models/User";
+import { UserModel, ApiModel } from "../models/User";
 import { config } from "dotenv";
 import { exact } from "x402/schemes";
 import { useFacilitator } from "x402/verify";
@@ -119,18 +119,13 @@ router.all("/:id", async (req, res) => {
   try {
     const endpointId = `/api/x402/${req.params.id}`;
 
-    const user = await User.findOne({
-      "restEndpoints.generatedEndpoint": endpointId,
-    });
-
-    if (!user) return res.status(404).json({ error: "API not found" });
-
-    const api = user.restEndpoints.find(
-      (r) => r.generatedEndpoint === endpointId
-    );
+    const api = await ApiModel.findOne({ generatedEndpoint: endpointId });
     if (!api) return res.status(404).json({ error: "API not found" });
 
-    const address = api.ownerPublicKey;
+    const user = await UserModel.findById(api.owner);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const address = user.publicKey;
 
     const BASE_URL = process.env.SERVER_BASE_URL || "http://localhost:3000";
     const resource = `${BASE_URL}${api.generatedEndpoint}` as Resource;
@@ -168,7 +163,7 @@ router.all("/:id", async (req, res) => {
       );
 
       api.amountGenerated += api.pricePerRequest;
-      await user.save();
+      await api.save();
 
       const encodedResponse = Buffer.from(
         JSON.stringify(settleResponse)

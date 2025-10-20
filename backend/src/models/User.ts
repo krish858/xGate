@@ -1,6 +1,9 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
-interface IApi {
+/**
+ * Separate API schema
+ */
+export interface IApi extends Document {
   name: string;
   description: string;
   generatedEndpoint: string;
@@ -10,13 +13,7 @@ interface IApi {
   body?: Record<string, any>;
   amountGenerated: number;
   pricePerRequest: number;
-  ownerPublicKey: string;
-}
-
-export interface IUser extends Document {
-  publicKey: string;
-  restEndpoints: IApi[];
-  webSockets: IApi[];
+  owner: Types.ObjectId; // reference to User
 }
 
 const ApiSchema = new Schema<IApi>({
@@ -33,13 +30,41 @@ const ApiSchema = new Schema<IApi>({
   body: { type: Object, default: {} },
   amountGenerated: { type: Number, default: 0 },
   pricePerRequest: { type: Number, required: true },
-  ownerPublicKey: { type: String, required: true },
+  owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
+
+export const ApiModel = model<IApi>("Api", ApiSchema);
+
+/**
+ * Separate WebSocket schema
+ */
+export interface IWebSocket extends Document {
+  name: string;
+  generatedEndpoint: string;
+  owner: Types.ObjectId; // reference to User
+}
+
+const WebSocketSchema = new Schema<IWebSocket>({
+  name: { type: String, required: true },
+  generatedEndpoint: { type: String, required: true },
+  owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+});
+
+export const WebSocketModel = model<IWebSocket>("WebSocket", WebSocketSchema);
+
+/**
+ * User schema with references to APIs and WebSockets
+ */
+export interface IUser extends Document {
+  publicKey: string;
+  restEndpoints: Types.ObjectId[]; // array of API IDs
+  webSockets: Types.ObjectId[]; // array of WebSocket IDs
+}
 
 const UserSchema = new Schema<IUser>({
   publicKey: { type: String, required: true, unique: true },
-  restEndpoints: { type: [ApiSchema], default: [] },
-  webSockets: { type: [ApiSchema], default: [] },
+  restEndpoints: [{ type: Schema.Types.ObjectId, ref: "Api", default: [] }],
+  webSockets: [{ type: Schema.Types.ObjectId, ref: "WebSocket", default: [] }],
 });
 
-export default model<IUser>("User", UserSchema);
+export const UserModel = model<IUser>("User", UserSchema);
