@@ -1,7 +1,7 @@
 import express from "express";
 import axios, { Method } from "axios";
 import https from "https";
-import { UserModel, ApiModel } from "../models/User";
+import { UserModel, ApiModel } from "../models/model";
 import { config } from "dotenv";
 import { exact } from "x402/schemes";
 import { useFacilitator } from "x402/verify";

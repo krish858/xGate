@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { UserModel, ApiModel } from "../models/User";
+import { UserModel, ApiModel } from "../models/model";
 import { nanoid } from "nanoid";
 
 const router = express.Router();

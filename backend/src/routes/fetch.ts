@@ -1,11 +1,8 @@
 import express, { Request, Response } from "express";
-import { UserModel, ApiModel, WebSocketModel } from "../models/User";
+import { UserModel, ApiModel, WebSocketModel } from "../models/model";
 
 const router = express.Router();
 
-/**
- * Create or fetch a user
- */
 router.post("/", async (req: Request, res: Response) => {
   try {
     const { publicKey } = req.body;
@@ -19,7 +16,6 @@ router.post("/", async (req: Request, res: Response) => {
       await user.save();
     }
 
-    // Populate the last 5 APIs and WebSockets
     const recentRest = await ApiModel.find({ owner: user._id })
       .sort({ _id: -1 })
       .limit(5);
