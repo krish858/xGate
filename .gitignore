@@ -3,4 +3,4 @@ backend/.env
 backend/dist/
 frontend/.env
 backend/tsconfig.tsbuildinfo
-gen_env.sh
+
