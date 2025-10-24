@@ -44,8 +44,8 @@ export const ApiModel = model<IApi>("Api", ApiSchema);
 
 export interface IWebSocket extends Document {
   name: string;
-  generatedEndpoint: string;
-  serviceUrl?: string;
+  generatedId: string;
+  serviceUrl: string;
   owner: Types.ObjectId;
   pricePerMinute: number;
   billingMode: "subscription";
@@ -58,13 +58,13 @@ export interface IWebSocket extends Document {
 const WebSocketSchema = new Schema<IWebSocket>(
   {
     name: { type: String, required: true },
-    generatedEndpoint: {
+    generatedId: {
       type: String,
       required: true,
       unique: true,
       index: true,
     },
-    serviceUrl: { type: String, required: false },
+    serviceUrl: { type: String, required: true },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
     pricePerMinute: { type: Number, required: true, default: 0 },
     billingMode: {

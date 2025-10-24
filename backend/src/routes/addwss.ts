@@ -8,20 +8,18 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { publicKey, name, serviceUrl, pricePerMinute } = req.body;
 
-    if (!publicKey || !name || pricePerMinute === undefined) {
+    if (!publicKey || !name || !serviceUrl || pricePerMinute === undefined) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    let user = await UserModel.findOne({ publicKey });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const user = await UserModel.findOne({ publicKey });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const generatedEndpoint = `/wss/${nanoid(10)}`;
+    const generatedId = nanoid(10);
 
     const newWss = new WebSocketModel({
       name,
-      generatedEndpoint,
+      generatedId,
       serviceUrl,
       owner: user._id,
       pricePerMinute: parseFloat(pricePerMinute),
@@ -36,11 +34,13 @@ router.post("/", async (req: Request, res: Response) => {
     user.webSockets.push(newWss._id);
     await user.save();
 
+    const publicWssUrl = `wss://yourserver:8000/${generatedId}`;
+
     res.json({
       success: true,
       wss: {
         name: newWss.name,
-        generatedEndpoint: newWss.generatedEndpoint,
+        url: publicWssUrl,
         pricePerMinute: newWss.pricePerMinute,
       },
     });

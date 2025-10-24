@@ -5,10 +5,16 @@ export interface ApiType {
   amountGenerated: number;
 }
 
+export interface WebSocketType {
+  name: string;
+  generatedId: string;
+  amountGenerated: number;
+}
+
 export interface UserData {
   publicKey: string;
   restEndpoints: ApiType[];
-  webSockets: ApiType[];
+  webSockets: WebSocketType[];
 }
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";

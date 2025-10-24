@@ -4,3 +4,5 @@ backend/dist/
 frontend/.env
 backend/tsconfig.tsbuildinfo
 
+test/node_modules/
+test/constants.ts

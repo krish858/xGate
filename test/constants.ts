@@ -1,2 +1,2 @@
 export const BASE_URL = "http://localhost:3000";
-export const ENDPOINT = "/api/x402/INrbMlQduI";
+export const ENDPOINT = "/api/x402/orio9bO06e";

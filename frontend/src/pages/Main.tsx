@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useUserData } from "../hooks/userData";
 import AddRestModal from "../components/AddRestModal";
+import AddWssModal from "../components/AddWssModal";
 
 const Home: React.FC = () => {
   const { address, isConnected } = useAccount();
@@ -14,7 +15,8 @@ const Home: React.FC = () => {
   const restApis = userData?.restEndpoints || [];
   const webSockets = userData?.webSockets || [];
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
+  const [isWssModalOpen, setIsWssModalOpen] = useState(false);
 
   const refreshUserData = () => {
     if (refetch) refetch();
@@ -38,10 +40,10 @@ const Home: React.FC = () => {
             className="text-center max-w-3xl"
           >
             <h2 className="text-5xl sm:text-6xl font-extrabold mb-6 drop-shadow-lg">
-              Monetize Your APIs Effortlessly
+              Monetize Your Backend Effortlessly
             </h2>
             <p className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed">
-              Turn your public APIs into revenue streams using{" "}
+              Turn your public APIs and WebSockets into revenue streams using{" "}
               <span className="font-semibold text-indigo-300">x402</span>.
               Connect your wallet, register your endpoints, and start earning
               instantly.
@@ -62,7 +64,9 @@ const Home: React.FC = () => {
             <p className="text-gray-300 mb-8 font-mono">{address}</p>
 
             {loading ? (
-              <p className="text-center text-gray-400">Loading your APIs...</p>
+              <p className="text-center text-gray-400">
+                Loading your endpoints...
+              </p>
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
@@ -70,7 +74,7 @@ const Home: React.FC = () => {
                     <h3 className="text-2xl font-semibold">REST APIs</h3>
                     <button
                       className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 transition"
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={() => setIsRestModalOpen(true)}
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -113,12 +117,55 @@ const Home: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-2xl font-semibold">WebSocket APIs</h3>
+                    <button
+                      className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 transition"
+                      onClick={() => setIsWssModalOpen(true)}
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center text-gray-400">
-                    <p className="text-lg font-medium mb-2">Coming Soon 🚧</p>
-                    <p className="text-sm">
-                      WebSocket monetization support is on the way!
-                    </p>
+
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                    {webSockets.length > 0 ? (
+                      <>
+                        {webSockets.slice(0, 5).map((wss, i) => {
+                          // Dynamically build the connection URL
+                          const serverUrl =
+                            import.meta.env.VITE_API_URL?.replace(
+                              /^http/,
+                              "ws"
+                            ) || "wss://yourserver.com";
+                          const fullUrl = `${serverUrl}/${wss.generatedId}`;
+
+                          return (
+                            <div
+                              key={i}
+                              className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-white/10 transition"
+                            >
+                              <div>
+                                <p className="font-semibold">{wss.name}</p>
+                                <p className="text-sm text-gray-300 font-mono break-all">
+                                  {fullUrl}
+                                </p>
+                              </div>
+                              <p className="text-sm text-indigo-400">
+                                ${wss.amountGenerated?.toFixed(2) || "0.00"}
+                              </p>
+                            </div>
+                          );
+                        })}
+
+                        <div className="mt-3 w-full text-center">
+                          <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
+                            View All
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-gray-400 text-sm text-center">
+                        No WebSocket APIs added yet.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -132,12 +179,20 @@ const Home: React.FC = () => {
       </footer>
 
       {address && (
-        <AddRestModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          publicKey={address}
-          refreshData={refreshUserData}
-        />
+        <>
+          <AddRestModal
+            isOpen={isRestModalOpen}
+            onClose={() => setIsRestModalOpen(false)}
+            publicKey={address}
+            refreshData={refreshUserData}
+          />
+          <AddWssModal
+            isOpen={isWssModalOpen}
+            onClose={() => setIsWssModalOpen(false)}
+            publicKey={address}
+            refreshData={refreshUserData}
+          />
+        </>
       )}
     </div>
   );

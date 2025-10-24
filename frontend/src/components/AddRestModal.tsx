@@ -26,6 +26,7 @@ const AddRestModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (
       !name.trim() ||
@@ -49,7 +50,6 @@ const AddRestModal: React.FC<Props> = ({
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/addRest`, {
@@ -67,13 +67,21 @@ const AddRestModal: React.FC<Props> = ({
         }),
       });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to add API");
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error("Server returned invalid JSON");
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to add API");
+      }
 
       refreshData();
       onClose();
 
-      // Reset form
       setName("");
       setDescription("");
       setServiceUrl("");
@@ -82,6 +90,7 @@ const AddRestModal: React.FC<Props> = ({
       setBody("");
       setPrice(0);
     } catch (err: any) {
+      console.error("Add API Error:", err);
       setError(err.message || "Error adding API");
     } finally {
       setLoading(false);

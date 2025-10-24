@@ -25,10 +25,11 @@ router.post("/", async (req: Request, res: Response) => {
       !pricePerRequest ||
       !method
     ) {
-      return res.status(400).json({ error: "All required fields missing" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing required fields" });
     }
 
-    // Find or create user
     let user = await UserModel.findOne({ publicKey });
     if (!user) {
       user = new UserModel({ publicKey, restEndpoints: [], webSockets: [] });
@@ -37,7 +38,6 @@ router.post("/", async (req: Request, res: Response) => {
 
     const generatedEndpoint = `/api/x402/${nanoid(10)}`;
 
-    // Create API document
     const api = new ApiModel({
       name,
       description,
@@ -53,14 +53,27 @@ router.post("/", async (req: Request, res: Response) => {
 
     await api.save();
 
-    //@ts-ignore
+    // @ts-ignore
     user.restEndpoints.push(api._id);
     await user.save();
 
-    res.json({ success: true, api });
-  } catch (err) {
+    return res.status(201).json({
+      success: true,
+      api: {
+        id: api._id,
+        name: api.name,
+        description: api.description,
+        generatedEndpoint: api.generatedEndpoint,
+        pricePerRequest: api.pricePerRequest,
+      },
+    });
+  } catch (err: any) {
     console.error("Add REST API error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    const message =
+      err.code === 11000
+        ? "Duplicate endpoint detected. Please try again."
+        : err.message || "Internal server error";
+    return res.status(500).json({ success: false, error: message });
   }
 });
 
