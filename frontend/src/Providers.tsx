@@ -1,7 +1,12 @@
 import { createAppKit } from "@reown/appkit/react";
 
 import { WagmiProvider } from "wagmi";
-import { arbitrum, mainnet } from "@reown/appkit/networks";
+import {
+  arbitrum,
+  baseSepolia,
+  mainnet,
+  sepolia,
+} from "@reown/appkit/networks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 
@@ -17,8 +22,9 @@ const wagmiAdapter = new WagmiAdapter({
 
 createAppKit({
   adapters: [wagmiAdapter],
-  networks: [mainnet, arbitrum],
+  networks: [mainnet, arbitrum, sepolia, baseSepolia],
   projectId,
+  themeMode: "dark",
 });
 
 //@ts-ignore
