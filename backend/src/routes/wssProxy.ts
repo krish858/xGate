@@ -158,7 +158,6 @@ export function setupWssHandler(wss: WebSocketServer) {
         JSON.stringify(paymentRequirements[0], null, 2)
       );
 
-      // Verify payment using the same pattern as x402.ts
       const isValid = await verifyPayment(
         client,
         paymentHeader,
