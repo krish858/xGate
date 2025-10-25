@@ -6,8 +6,6 @@ export interface IApi extends Document {
   generatedEndpoint: string;
   serviceUrl: string;
   method: string;
-  queryParams?: Record<string, string>;
-  body?: Record<string, any>;
   amountGenerated: number;
   pricePerRequest: number;
   owner: Types.ObjectId;
@@ -31,8 +29,6 @@ const ApiSchema = new Schema<IApi>(
       required: true,
       enum: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     },
-    queryParams: { type: Object, default: {} },
-    body: { type: Object, default: {} },
     amountGenerated: { type: Number, default: 0 },
     pricePerRequest: { type: Number, required: true },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },

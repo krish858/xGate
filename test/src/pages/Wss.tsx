@@ -172,33 +172,98 @@ const WssTester: React.FC = () => {
     }
   };
 
+  // New: message input state and send handler
+  const [outgoing, setOutgoing] = useState<string>("");
+
+  const sendMessage = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      setMessages((m) => [...m, "❌ Cannot send — not connected"]);
+      return;
+    }
+
+    try {
+      wsRef.current.send(outgoing);
+      setMessages((m) => [...m, `➡️ Sent: ${outgoing}`]);
+      setOutgoing("");
+    } catch (err: any) {
+      console.error("Send error:", err);
+      setMessages((m) => [...m, `❌ Send error: ${err?.message || err}`]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-900 text-white p-8">
       <div className="flex justify-between items-center mb-12">
-        <h1 className="text-3xl font-bold">xGate WSS Subscription Demo</h1>
+        <div>
+          <h1 className="text-3xl font-bold">xGate WSS Subscription Demo</h1>
+          <p className="text-sm text-neutral-400">
+            Status:{" "}
+            {wsRef.current && wsRef.current.readyState === WebSocket.OPEN ? (
+              <span className="text-emerald-400">Connected</span>
+            ) : (
+              <span className="text-neutral-500">Disconnected</span>
+            )}
+          </p>
+        </div>
         <ConnectButton />
       </div>
 
-      <div className="flex gap-4">
-        <button
-          onClick={connectToWss}
-          disabled={wsRef.current !== null}
-          className="px-6 py-3 border border-neutral-700 rounded-lg hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Connect to WSS
-        </button>
-        <button
-          onClick={disconnect}
-          disabled={wsRef.current === null}
-          className="px-6 py-3 border border-red-700 rounded-lg hover:bg-red-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Disconnect
-        </button>
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+        <div className="flex gap-4">
+          <button
+            onClick={connectToWss}
+            disabled={wsRef.current !== null}
+            className="px-6 py-3 border border-neutral-700 rounded-lg hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Connect to WSS
+          </button>
+          <button
+            onClick={disconnect}
+            disabled={wsRef.current === null}
+            className="px-6 py-3 border border-red-700 rounded-lg hover:bg-red-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Disconnect
+          </button>
+        </div>
+
+        <div className="flex gap-2 items-center w-full max-w-2xl mt-4 md:mt-0">
+          <input
+            value={outgoing}
+            onChange={(e) => setOutgoing(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (outgoing.trim()) sendMessage();
+              }
+            }}
+            className="flex-1 px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-neutral-500 outline-none"
+            placeholder={
+              wsRef.current && wsRef.current.readyState === WebSocket.OPEN
+                ? "Type a message and press Enter or Send"
+                : "Connect first to send messages"
+            }
+            disabled={
+              !(wsRef.current && wsRef.current.readyState === WebSocket.OPEN)
+            }
+          />
+          <button
+            onClick={sendMessage}
+            disabled={
+              !(wsRef.current && wsRef.current.readyState === WebSocket.OPEN) ||
+              !outgoing.trim()
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Send
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 bg-neutral-800 p-4 rounded-lg border border-neutral-700 font-mono text-sm h-96 overflow-auto">
         {messages.map((msg, i) => (
-          <div key={i}>{msg}</div>
+          <div key={i} className="py-1">
+            {msg}
+          </div>
         ))}
       </div>
     </div>

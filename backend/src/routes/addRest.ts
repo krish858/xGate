@@ -13,8 +13,6 @@ router.post("/", async (req: Request, res: Response) => {
       serviceUrl,
       pricePerRequest,
       method,
-      queryParams,
-      body,
     } = req.body;
 
     if (
@@ -44,8 +42,6 @@ router.post("/", async (req: Request, res: Response) => {
       generatedEndpoint,
       serviceUrl,
       method,
-      queryParams: queryParams || {},
-      body: body || {},
       pricePerRequest: parseFloat(pricePerRequest),
       amountGenerated: 0,
       owner: user._id,

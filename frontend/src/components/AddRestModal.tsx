@@ -18,8 +18,6 @@ const AddRestModal: React.FC<Props> = ({
   const [description, setDescription] = useState("");
   const [serviceUrl, setServiceUrl] = useState("");
   const [method, setMethod] = useState("GET");
-  const [queryParams, setQueryParams] = useState("");
-  const [body, setBody] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,16 +37,6 @@ const AddRestModal: React.FC<Props> = ({
       );
     }
 
-    let parsedQuery = {};
-    let parsedBody = {};
-
-    try {
-      parsedQuery = queryParams ? JSON.parse(queryParams) : {};
-      parsedBody = body ? JSON.parse(body) : {};
-    } catch {
-      return setError("Invalid JSON in query params or body");
-    }
-
     setLoading(true);
 
     try {
@@ -62,8 +50,6 @@ const AddRestModal: React.FC<Props> = ({
           serviceUrl: serviceUrl.trim(),
           pricePerRequest: price,
           method,
-          queryParams: parsedQuery,
-          body: parsedBody,
         }),
       });
 
@@ -86,8 +72,6 @@ const AddRestModal: React.FC<Props> = ({
       setDescription("");
       setServiceUrl("");
       setMethod("GET");
-      setQueryParams("");
-      setBody("");
       setPrice(0);
     } catch (err: any) {
       console.error("Add API Error:", err);
@@ -181,40 +165,6 @@ const AddRestModal: React.FC<Props> = ({
                 <option value="PATCH">PATCH</option>
               </select>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
-                Query Params{" "}
-                <span className="text-gray-600 font-normal">
-                  (Optional JSON)
-                </span>
-              </label>
-              <textarea
-                value={queryParams}
-                onChange={(e) => setQueryParams(e.target.value)}
-                placeholder='{"param": "value"}'
-                rows={2}
-                className="w-full px-4 py-2.5 rounded-xl bg-black border border-gray-800 font-mono text-sm focus:outline-none focus:border-white transition text-white placeholder-gray-600 resize-none"
-              />
-            </div>
-
-            {method !== "GET" && (
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">
-                  Request Body{" "}
-                  <span className="text-gray-600 font-normal">
-                    (Optional JSON)
-                  </span>
-                </label>
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder='{"key": "value"}'
-                  rows={3}
-                  className="w-full px-4 py-2.5 rounded-xl bg-black border border-gray-800 font-mono text-sm focus:outline-none focus:border-white transition text-white placeholder-gray-600 resize-none"
-                />
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">
